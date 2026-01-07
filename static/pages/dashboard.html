@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydro Temperature Dashboard</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="glass-header">
+            <div class="header-left">
+                <a href="/" class="back-link" title="Torna alla Home">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+                <div class="logo">
+                    <span class="icon">💧</span>
+                    <h1>HydroClimate</h1>
+                </div>
+            </div>
+            <div class="status-pill" id="connectionStatus">
+                <span class="dot"></span> Online
+            </div>
+        </header>
+
+        <main>
+            <!-- Current Stats Cards -->
+            <section class="current-stats">
+                <div class="card glass-card">
+                    <h2>Temperatura</h2>
+                    <div class="stat-value">
+                        <span id="currentTemp">--</span><span class="unit">°C</span>
+                    </div>
+                </div>
+                <div class="card glass-card">
+                    <h2>Umidità</h2>
+                    <div class="stat-value">
+                        <span id="currentHum">--</span><span class="unit">%</span>
+                    </div>
+                </div>
+                <div class="card glass-card">
+                    <h2>Ultimo Aggiornamento</h2>
+                    <div class="stat-value small">
+                        <span id="lastUpdate">Mai</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Chart -->
+            <section class="charts-section">
+                <div class="card glass-card chart-container">
+                    <div class="card-header">
+                        <h2>Andamento Storico</h2>
+                        <div class="controls">
+                            <button class="btn glass-btn active" onclick="loadHistory('24h')">24h</button>
+                            <button class="btn glass-btn" onclick="loadHistory('7d')">7gg</button>
+                            <button class="btn glass-btn" onclick="loadHistory('30d')">30gg</button>
+                            <button class="btn glass-btn" onclick="loadHistory('all')">Tutto</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Monthly Grid -->
+            <section class="monthly-section">
+                <div class="card glass-card full-width">
+                    <h2>Riepilogo Mensile</h2>
+                    <div class="table-responsive">
+                        <table class="glass-table">
+                            <thead>
+                                <tr>
+                                    <th>Mese</th>
+                                    <th>Temp Media</th>
+                                    <th>Min / Max T</th>
+                                    <th>Umidità Media</th>
+                                    <th>Min / Max H</th>
+                                    <th>Registrazioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlyTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/assets/js/app.js"></script>
+</body>
+
+</html>
