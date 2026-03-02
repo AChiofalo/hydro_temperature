@@ -275,6 +275,10 @@ h2 {
     z-index: 10;
     padding: 2rem;
     position: relative;
+    display: flex;
+    gap: 4rem;
+    align-items: center;
+    justify-content: center;
 }
 
 .logo-large {
@@ -410,6 +414,11 @@ h2 {
 }
 
 @media (max-width: 768px) {
+    .landing-container {
+        flex-direction: column;
+        gap: 3rem;
+    }
+
     .hero-title {
         font-size: 3rem;
     }

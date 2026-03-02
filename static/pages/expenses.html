@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Spese - HydroClimate</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- AgGrid -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    <style>
+        /* Specific Styles for Expenses */
+        .expense-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-primary);
+            background: rgba(47, 129, 247, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .items-table-container {
+            margin-top: 1rem;
+            height: 400px;
+            width: 100%;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .btn-delete {
+            background: rgba(255, 50, 50, 0.2);
+            color: #ff6b6b;
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 50, 50, 0.4);
+        }
+
+        .btn-add {
+            background: rgba(46, 160, 67, 0.2);
+            color: var(--success);
+            padding: 8px 16px;
+            border: 1px solid rgba(46, 160, 67, 0.3);
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: var(--accent-primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            border: none;
+            margin-top: 20px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        #section-list {
+            display: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* AgGrid Dark Theme Overrides for Glassmorphism */
+        .ag-theme-alpine-dark {
+            --ag-background-color: transparent;
+            --ag-header-background-color: rgba(22, 27, 34, 0.9);
+            --ag-odd-row-background-color: rgba(255, 255, 255, 0.03);
+            --ag-border-color: var(--glass-border);
+            --ag-header-foreground-color: var(--text-secondary);
+            --ag-foreground-color: var(--text-primary);
+            --ag-row-hover-color: rgba(47, 129, 247, 0.1);
+            font-family: var(--font-family);
+        }
+
+        .ag-root-wrapper {
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="header-left">
+                <a href="/" class="back-link">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div class="logo">
+                    <span>🧾</span> Expenses Toolbox
+                </div>
+            </div>
+            <div class="status-pill">
+                <span class="dot"></span>
+                System Ready
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('new')">Nuova Spesa</button>
+            <button class="tab-btn" onclick="switchTab('list')">Storico Spese</button>
+        </div>
+
+        <!-- NEW EXPENSE SECTION -->
+        <div id="section-new" class="expense-container">
+            <div class="glass-card">
+                <h2>1. Carica Scontrino</h2>
+                <div class="upload-area" id="drop-zone">
+                    <input type="file" id="file-input" accept="image/*" style="display: none;"
+                        onchange="handleFileSelect(this)">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p>Clicca o trascina qui la foto dello scontrino</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px;">L'AI processerà
+                        l'immagine automaticamente</p>
+                </div>
+            </div>
+
+            <div id="expense-form-container" class="glass-card hidden">
+                <h2>2. Verifica e Salva</h2>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Negozio</label>
+                        <input type="text" id="store-name" class="form-input" placeholder="Es. Esselunga">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Località</label>
+                        <input type="text" id="location" class="form-input" placeholder="Es. Milano">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data</label>
+                        <input type="date" id="purchase-date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Totale (€)</label>
+                        <input type="number" step="0.01" id="total-amount" class="form-input">
+                    </div>
+                </div>
+
+                <h3>Dettaglio Prodotti</h3>
+                <div id="items-grid" class="items-table-container ag-theme-alpine-dark"></div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-add" onclick="addNewRow()"><i class="fas fa-plus"></i> Aggiungi Riga</button>
+                </div>
+
+                <button class="btn-save" onclick="saveExpense()">
+                    Conferma e Salva Spesa
+                </button>
+            </div>
+        </div>
+
+        <!-- LIST SECTION -->
+        <div id="section-list">
+            <div class="glass-card" style="height: 600px; display: flex; flex-direction: column;">
+                <div class="card-header">
+                    <h2>Storico Spese</h2>
+                    <button class="glass-btn" onclick="loadExpenses()"><i class="fas fa-sync-alt"></i></button>
+                </div>
+                <div id="history-grid" class="ag-theme-alpine-dark" style="flex-grow: 1; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 1rem; color: white;">Analisi Scontrino in corso...</p>
+    </div>
+
+    <script src="/assets/js/expenses.js"></script>
+</body>
+
+</html>
